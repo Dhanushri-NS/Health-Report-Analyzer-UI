@@ -1,0 +1,179 @@
+<div class="main-content">
+
+  <div class="header">
+  <div>
+    <h2>🧬 Smart Health Report Analyzer</h2>
+    <p class="subtitle">Upload your report → Get instant AI-powered health insights</p>
+  </div>
+</div>
+
+<div class="card upload-card">
+  <h3>Upload Medical Report</h3>
+
+  <label class="file-btn">
+    📂 Choose Report
+    <input type="file" (change)="onFileSelected($event)" />
+  </label>
+
+  <button class="upload-btn" (click)="upload()">🚀 Analyze Report</button>
+</div>
+
+  <div *ngIf="response" class="dashboard">
+
+    <!-- 🩺 Disclaimer -->
+    <div class="card doctor-note">
+      <h3>🩺 Medical Disclaimer</h3>
+      <p>This system simplifies reports for understanding. Not a diagnosis. Please consult a doctor.</p>
+    </div>
+
+    <!-- 📊 TABLE -->
+    <div class="card table-card">
+      <h3>📊 Parameter Summary Table</h3>
+
+      <table class="health-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Normal Range</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of response.analysis?.parameters">
+            
+            <!-- ✅ UPDATED WITH TOOLTIP -->
+            <td>
+              {{ item.name }}
+              <span class="info-icon" title="{{ item.description }}">ℹ️</span>
+            </td>
+
+            <td>{{ item.value }} {{ item.unit }}</td>
+            <td>{{ item.min }} - {{ item.max }}</td>
+
+            <td [ngClass]="{
+              'normal': item.status === 'Normal',
+              'low': item.status === 'Low',
+              'high': item.status === 'High'
+            }">
+              {{ item.status }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 🚨 CRITICAL ALERTS -->
+    <div *ngIf="response.analysis?.alerts?.length > 0" class="alert-box">
+      <h3>⚠️ Critical Alerts</h3>
+      <ul>
+        <li *ngFor="let alert of response.analysis.alerts">
+          {{ alert }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- 📊 TOP CARDS -->
+    <div class="top-row">
+      <div class="card risk-card">
+        <h4>Risk Level</h4>
+        <h1 [ngClass]="{
+          'low-risk': response.analysis?.riskLevel === 'Low',
+          'medium-risk': response.analysis?.riskLevel === 'Medium',
+          'high-risk': response.analysis?.riskLevel === 'High'
+        }">
+          {{ response.analysis?.riskLevel }}
+        </h1>
+      </div>
+
+      <div class="card score-card">
+        <h4>Health Score</h4>
+        <h1 [ngClass]="{
+          'good-score': response.analysis?.healthScore >= 80,
+          'medium-score': response.analysis?.healthScore >= 50 && response.analysis?.healthScore < 80,
+          'bad-score': response.analysis?.healthScore < 50
+        }">
+          {{ response.analysis?.healthScore }} / 100
+        </h1>
+      </div>
+
+      <div class="card summary-card">
+        <h4>Summary</h4>
+        <p>Total: {{ response.analysis?.parameters?.length || 0 }}</p>
+        <p>Abnormal: {{ getAbnormalCount() }}</p>
+      </div>
+    </div>
+
+    <!-- 🤖 AI SECTION -->
+    <div class="card ai-summary-box" *ngIf="response.analysis">
+      <h3>🤖 AI Intelligent Analysis</h3>
+
+      <div *ngIf="response.analysis?.aiFailed" class="ai-error">
+        ⚠️ AI analysis is temporarily unavailable.<br>
+        👉 System-generated analysis is provided for reliability.
+      </div>
+
+      <div *ngIf="!response.analysis?.aiFailed" class="ai-content">
+        {{ response.analysis.aiReportSummary }}
+      </div>
+    </div>
+
+    <!-- ⚙️ SYSTEM SUMMARY -->
+    <div class="card system-summary-box">
+      <h3>⚙️ System Generated Summary</h3>
+      <p>{{ response.analysis?.systemSummary }}</p>
+    </div>
+
+    <!-- ⚙️ SYSTEM DETAILS -->
+    <h3 class="system-title">⚙️ System Generated Analysis</h3>
+
+    <div class="card">
+      <h3>🧪 Health Parameters</h3>
+
+      <div *ngFor="let item of response.analysis?.parameters"
+        [ngClass]="{'param-card': true, 'abnormal-box': item.status !== 'Normal'}">
+
+        <div class="param-header">
+          <span>
+            {{ item.name }}
+            <span class="info-icon" title="{{ item.description }}">ℹ️</span>
+          </span>
+          <span class="category">{{ item.category }}</span>
+        </div>
+
+        <div class="param-body">
+          <span>{{ item.value }} {{ item.unit }}</span>
+
+          <span [ngClass]="{
+            'normal': item.status === 'Normal',
+            'low': item.status === 'Low',
+            'high': item.status === 'High'
+          }">
+            {{ item.status }}
+          </span>
+        </div>
+
+        <!-- ✅ REMARK -->
+        <div class="remark">
+          👉 {{ item.remark }}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 📈 CHART -->
+    <div class="card">
+      <h3>📈 Health Chart</h3>
+      <div style="height:300px;">
+        <canvas id="healthChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 📥 DOWNLOAD -->
+    <div class="center">
+      <button class="download-btn" (click)="downloadReport()">Download Report</button>
+    </div>
+
+  </div>
+</div>
